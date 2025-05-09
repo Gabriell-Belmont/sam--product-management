@@ -1,3 +1,96 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environment
 .env
-/venv
-__pycache__
+.venv
+ENV/
+env/
+venv/
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# pytest
+.cache
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Cython debug symbols
+cython_debug/
+
+# FastAPI specific
+*.db
+instance/
+instance/*
+instance/*.db
+
+# Database files
+*.sqlite3
+*.db
+*.sql
+
+# Logs
+*.log
+
+# RabbitMQ
+rabbitmq/
+
+# Secret keys and credentials
+.env
+*.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Python tools
+.pytest_cache/
+
+# DynamoDB local
+.dynamodb/
+
+# Ignore any other temporary files
+tmp/
+temp/
