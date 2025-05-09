@@ -10,7 +10,7 @@ from datetime import datetime
 # Adiciona o diretório pai ao path para importar os módulos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app_development.prompt_processor import PromptProcessor, PromptProcessorError
+from app.modules.prompt_processor import PromptProcessor, PromptProcessorError
 
 
 class TestPromptProcessor(unittest.TestCase):

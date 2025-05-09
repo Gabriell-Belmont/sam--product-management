@@ -14,8 +14,8 @@ from typing import Dict, Any
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Importa os módulos necessários
-from app_development.config import GPT_ENABLED
-from app_development.gpt_service import GPTService, GPTServiceError
+from config import GPT_ENABLED
+from app.infra.gpt_service import GPTService, GPTServiceError
 
 
 def test_gpt_connection():

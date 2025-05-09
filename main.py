@@ -6,21 +6,22 @@ import os
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import warnings
 
-from app_development.cli import prompt_item_type, prompt_for_details, confirm_creation, print_header
-from app_development.config import ITEM_TYPES, S3_ITEM_TYPE_PREFIXES, GPT_ENABLED, GPT_API_KEY
-from app_development.items import Epic, Story, Task, SubTask, Bug
-from app_development.s3_service import S3Service, S3ServiceError
-from app_development.jira_service import JiraService
-from app_development.prompt_processor import PromptProcessor, PromptProcessorError
-from app_development.template_generator import generate_item, TemplateGeneratorError
-from app_development.hierarchy_builder import (
+from app.modules.cli import prompt_item_type, prompt_for_details, confirm_creation, print_header
+from config import ITEM_TYPES, S3_ITEM_TYPE_PREFIXES, GPT_ENABLED, GPT_API_KEY
+from app.models.models import Epic, Story, Task, SubTask, Bug
+from app.infra.s3_service import S3Service, S3ServiceError
+from app.infra.jira_service import JiraService
+from app.modules.prompt_processor import PromptProcessor, PromptProcessorError
+from app.modules.template_generator import generate_item, TemplateGeneratorError
+from app.modules.hierarchy_builder import (
     build_hierarchy, link_items, review_and_confirm, HierarchyBuilderError
 )
 load_dotenv()
 # Importação condicional do serviço GPT
 try:
-    from app_development.gpt_service import GPTService, GPTServiceError
+    from app.infra.gpt_service import GPTService, GPTServiceError
     gpt_available = True
 except ImportError:
     gpt_available = False
@@ -191,9 +192,7 @@ def get_recent_items(project_key: str, days: int = 30) -> Dict[str, List[Dict[st
         Dict[str, List[Dict[str, Any]]]: Dicionário com listas de itens por tipo.
     """
     try:
-        s3_service = S3Service()
-        since_date = datetime.utcnow() - timedelta(days=days)
-        
+        s3_service = S3Service()        
         # Obtém o histórico de itens por tipo
         history = s3_service.get_item_history(project_key, days=days)
         
@@ -346,6 +345,7 @@ def enrich_with_gpt(details: Dict[str, Any], item_type: str) -> Dict[str, Any]:
 def main():
     """Função principal do aplicativo."""
     try:
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
         print_header()
         required_vars = [
             "JIRA_BASE_URL",

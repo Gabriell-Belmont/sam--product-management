@@ -8,8 +8,8 @@ from datetime import datetime
 # Adiciona o diretório pai ao path para importar os módulos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app_development.s3_service import S3Service, S3ServiceError
-from app_development.items import Epic, Story, Task
+from app.infra.s3_service import S3Service, S3ServiceError
+from app.models.models import Epic, Story, Task
 
 
 def test_s3_service():
