@@ -633,7 +633,7 @@ class PromptProcessor:
     
     def _format_story_description(self, fields: Dict[str, Any]) -> str:
         """
-        Formata a descrição de uma história seguindo o template_analysis.md
+        Formata a descrição de uma história.
         
         Args:
             fields: Campos extraídos do prompt.
@@ -641,77 +641,49 @@ class PromptProcessor:
         Returns:
             str: Descrição formatada para história.
         """
-        description = "História:\nDescrição\n"
+        description = "Descrição\n"
         
-        if fields.get("as_a") and fields.get("i_want") and fields.get("so_that"):
-            description += f"Como: {fields['as_a']}\n"
-            description += f"Gostaria: {fields['i_want']}\n"
-            description += f"Para: {fields['so_that']}\n\n"
-        elif "user_story_format" in fields:
+        # Usa o formato de história de usuário se disponível
+        if "user_story_format" in fields:
             description += fields["user_story_format"] + "\n\n"
         else:
             description += fields.get("description", "Não fornecido") + "\n\n"
         
-        if fields.get("preconditions"):
+        if "preconditions" in fields:
             description += "Pré Condições\n"
-            preconditions = fields["preconditions"]
-            if isinstance(preconditions, list):
-                for condition in preconditions:
-                    description += f"• {condition}\n"
-            else:
-                preconditions_list = preconditions.split("\n")
-                for precondition in preconditions_list:
-                    if precondition.strip():
-                        description += f"• {precondition.strip()}\n"
+            preconditions = fields["preconditions"].split("\n")
+            for precondition in preconditions:
+                if precondition.strip():
+                    description += f"• {precondition.strip()}\n"
             description += "\n"
         
-        if fields.get("rules"):
+        if "rules" in fields:
             description += "Regras\n"
-            rules = fields["rules"]
-            if isinstance(rules, list):
-                for rule in rules:
-                    description += f"• {rule}\n"
-            else:
-                rules_list = rules.split("\n")
-                for rule in rules_list:
-                    if rule.strip():
-                        description += f"• {rule.strip()}\n"
+            rules = fields["rules"].split("\n")
+            for rule in rules:
+                if rule.strip():
+                    description += f"• {rule.strip()}\n"
             description += "\n"
         
-        if fields.get("exceptions"):
+        if "exceptions" in fields:
             description += "Exceção à Regra\n"
-            exceptions = fields["exceptions"]
-            if isinstance(exceptions, list):
-                for exception in exceptions:
-                    description += f"• {exception}\n"
-            else:
-                exceptions_list = exceptions.split("\n")
-                for exception in exceptions_list:
-                    if exception.strip():
-                        description += f"• {exception.strip()}\n"
+            exceptions = fields["exceptions"].split("\n")
+            for exception in exceptions:
+                if exception.strip():
+                    description += f"• {exception.strip()}\n"
             description += "\n"
         
-        if fields.get("acceptance_criteria"):
+        if "acceptance_criteria" in fields:
             description += "Critérios de Aceite\n"
-            criteria = fields["acceptance_criteria"]
-            if isinstance(criteria, list):
-                for criterion in criteria:
-                    description += f"• {criterion}\n"
-            else:
-                criteria_list = criteria.split("\n")
-                for criterion in criteria_list:
-                    if criterion.strip():
-                        description += f"• {criterion.strip()}\n"
+            criteria = fields["acceptance_criteria"].split("\n")
+            for criterion in criteria:
+                if criterion.strip():
+                    description += f"• {criterion.strip()}\n"
             description += "\n"
         
-        if fields.get("test_scenarios"):
+        if "test_scenarios" in fields:
             description += "Cenários de Teste\n"
-            scenarios = fields["test_scenarios"]
-            if isinstance(scenarios, list):
-                for scenario in scenarios:
-                    description += f"Cenário: {scenario}\n"
-            else:
-                description += f"Cenário: {scenarios}\n"
+            description += fields["test_scenarios"]
         
         return description.strip()
     
@@ -933,26 +905,11 @@ class PromptProcessor:
             payload: Payload com os dados do item.
             
         Returns:
-            Dict[str, Any]: Resposta da API do Jira com informações de sucesso/erro.
+            Dict[str, Any]: Resposta da API do Jira.
         """
         try:
-            logger.info(f"Iniciando criação de {item_type} no Jira")
-            logger.info(f"Payload: {payload}")
-            
-            logger.info(f"Configuração Jira - URL: {self.jira_service.base_url}")
-            logger.info(f"Configuração Jira - Project: {self.jira_service.project_key}")
-            logger.info(f"Configuração Jira - Email: {self.jira_service.email}")
-            
-            if not payload.get("summary"):
-                raise PromptProcessorError(f"Campo 'summary' é obrigatório para criar {item_type}")
-            if not payload.get("description"):
-                raise PromptProcessorError(f"Campo 'description' é obrigatório para criar {item_type}")
-            
             # Cria o item no Jira com base no tipo
-            response = None
-            
             if item_type == "épico":
-                logger.info("Criando épico no Jira")
                 response = self.jira_service.create_epic(
                     summary=payload["summary"],
                     description=payload["description"],
@@ -961,39 +918,25 @@ class PromptProcessor:
                 )
             
             elif item_type in ["história", "historia"]:
-                logger.info("Criando história no Jira")
-                epic_key = payload.get("epic_link") if payload.get("epic_link") else None
-                if epic_key:
-                    logger.info(f"História será vinculada ao épico: {epic_key}")
-                
                 response = self.jira_service.create_story(
                     summary=payload["summary"],
                     description=payload["description"],
-                    epic_key=epic_key,
+                    epic_key=payload.get("epic_link"),
                     labels=payload.get("labels", [])
                 )
             
             elif item_type == "task":
-                logger.info("Criando task no Jira")
-                parent_key = payload.get("story_link") if payload.get("story_link") else None
-                if parent_key:
-                    logger.info(f"Task será vinculada à história: {parent_key}")
-                
                 response = self.jira_service.create_task(
                     summary=payload["summary"],
                     description=payload["description"],
-                    parent_key=parent_key,
+                    parent_key=payload.get("story_link"),
                     labels=payload.get("labels", [])
                 )
             
             elif item_type == "subtask":
-                logger.info("Criando subtask no Jira")
                 if not payload.get("parent_key"):
-                    error_msg = "A chave do item pai é obrigatória para criar uma subtarefa"
-                    logger.error(error_msg)
-                    raise PromptProcessorError(error_msg)
+                    raise PromptProcessorError("A chave do item pai é obrigatória para criar uma subtarefa.")
                 
-                logger.info(f"Subtask será vinculada ao item pai: {payload['parent_key']}")
                 response = self.jira_service.create_subtask(
                     summary=payload["summary"],
                     description=payload["description"],
@@ -1002,26 +945,17 @@ class PromptProcessor:
                 )
             
             elif item_type == "bug":
-                logger.info("Criando bug no Jira")
-                parent_key = payload.get("parent_key") if payload.get("parent_key") else None
-                if parent_key:
-                    logger.info(f"Bug será vinculado ao item pai: {parent_key}")
-                
                 response = self.jira_service.create_bug(
                     summary=payload["summary"],
                     description=payload["description"],
-                    parent_key=parent_key,
+                    parent_key=payload.get("parent_key"),
                     labels=payload.get("labels", [])
                 )
             
             elif item_type == "sub-bug":
-                logger.info("Criando sub-bug no Jira")
                 if not payload.get("parent_key"):
-                    error_msg = "A chave do item pai é obrigatória para criar um sub-bug"
-                    logger.error(error_msg)
-                    raise PromptProcessorError(error_msg)
+                    raise PromptProcessorError("A chave do item pai é obrigatória para criar um sub-bug.")
                 
-                logger.info(f"Sub-bug será vinculado ao item pai: {payload['parent_key']}")
                 response = self.jira_service.create_sub_bug(
                     summary=payload["summary"],
                     description=payload["description"],
@@ -1030,58 +964,14 @@ class PromptProcessor:
                 )
             
             else:
-                error_msg = f"Tipo de item não suportado: {item_type}"
-                logger.error(error_msg)
-                raise PromptProcessorError(error_msg)
+                raise PromptProcessorError(f"Tipo de item não suportado: {item_type}")
             
-            if response and response.get("key"):
-                jira_key = response.get("key")
-                jira_url = f"{self.jira_service.base_url}/browse/{jira_key}"
-                logger.info(f"Item {item_type} criado com sucesso no Jira!")
-                logger.info(f"Jira Key: {jira_key}")
-                logger.info(f"Jira URL: {jira_url}")
-                logger.info(f"Resposta completa do Jira: {response}")
-                
-                return {
-                    "success": True,
-                    "jira_key": jira_key,
-                    "jira_url": jira_url,
-                    "item_type": item_type,
-                    "response": response
-                }
-            else:
-                error_msg = f"Resposta inválida do Jira para {item_type}: {response}"
-                logger.error(error_msg)
-                return {
-                    "success": False,
-                    "error": error_msg,
-                    "item_type": item_type,
-                    "response": response
-                }
-        
-        except PromptProcessorError as e:
-            error_msg = f"Erro de validação ao criar {item_type}: {str(e)}"
-            logger.error(error_msg)
-            return {
-                "success": False,
-                "error": error_msg,
-                "item_type": item_type,
-                "error_type": "validation_error"
-            }
+            logger.info(f"Item criado com sucesso: {response.get('key')}")
+            return response
         
         except Exception as e:
-            error_msg = f"Erro inesperado ao criar {item_type} no Jira: {str(e)}"
-            logger.error(error_msg)
-            logger.error(f"Tipo do erro: {type(e).__name__}")
-            logger.error(f"Payload que causou o erro: {payload}")
-            
-            return {
-                "success": False,
-                "error": error_msg,
-                "item_type": item_type,
-                "error_type": "jira_api_error",
-                "details": str(e)
-            }
+            logger.error(f"Erro ao criar item no Jira: {str(e)}")
+            raise PromptProcessorError(f"Erro ao criar item no Jira: {str(e)}")
     
     def process_prompt(self, prompt_text: str) -> Dict[str, Any]:
         """
