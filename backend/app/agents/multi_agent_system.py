@@ -11,13 +11,6 @@ class MultiAgentSystem:
         self.quality_assurance = self._create_quality_assurance()
         self.stakeholder = self._create_stakeholder()
         self.tech_lead = self._create_tech_lead()
-        
-        self.crew = Crew(
-            agents=[self.product_manager, self.quality_assurance, self.stakeholder, self.tech_lead],
-            tasks=[],
-            verbose=True,
-            process="sequential"
-        )
     
     def _create_product_manager(self) -> Agent:
         return Agent(
@@ -84,7 +77,14 @@ class MultiAgentSystem:
                 agent=self.product_manager
             )
             
-            result = self.crew.kickoff(inputs={"message": message, "context": user_context or ""})
+            crew = Crew(
+                agents=[self.product_manager, self.quality_assurance, self.stakeholder, self.tech_lead],
+                tasks=[task],
+                verbose=True,
+                process="sequential"
+            )
+            
+            result = crew.kickoff()
             return str(result)
             
         except Exception as e:
@@ -112,7 +112,14 @@ class MultiAgentSystem:
                 agent=self.product_manager
             )
             
-            result = self.crew.kickoff(inputs={"requirements": requirements})
+            crew = Crew(
+                agents=[self.product_manager, self.quality_assurance, self.stakeholder, self.tech_lead],
+                tasks=[analysis_task],
+                verbose=True,
+                process="sequential"
+            )
+            
+            result = crew.kickoff()
             
             return {
                 "analysis": str(result),
